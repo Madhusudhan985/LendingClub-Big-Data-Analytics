@@ -1,5 +1,13 @@
 // Databricks notebook source
+import org.apache.spark.sql.types.{StructType,StructField,IntegerType,StringType,DoubleType,FloatType,TimestampType}
+import org.apache.spark.sql.functions.{col,concat,current_timestamp,sha2,regexp_replace,lit,to_date}
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.{SparkSession, DataFrame}
+
+// COMMAND ----------
+
 val adlsRawFilePath = "/mnt/lendingClub/"
+val adlsDeltaTableFilePath ="/mnt/lendingClub/"
 
 // COMMAND ----------
 
@@ -41,5 +49,16 @@ def loadDataInDataframe(tableName:String,schema:StructType,inBoundSource:String,
 
 def writePartitionDataInDeltaLakeAndCreateTable(tableName:String,tableSchema:String,data:DataFrame,deltaPath:String,partitionColName:String)={
   println("Writing table:"+tableName)
+  data.write
+  .format("delta")
+  .mode("overwrite")
+  .partitionBy(partitionColName)
+  .save(adlsDeltaTableFilePath+deltaPath+"/"+tableName+"/")
+
+  spark.sql("CREATE TABLE IF NOT EXISTS"+tableSchema+"."+tableName+" USING DELTA LOCATION '"+adlsDeltaTableFilePath+deltaPath+"/"+tableName+"/' ");
   
 }
+
+// COMMAND ----------
+
+
