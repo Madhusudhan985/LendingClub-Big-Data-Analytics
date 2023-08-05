@@ -25,35 +25,86 @@ val loanDefaultersSchema = StructType(List(
 
 // COMMAND ----------
 
-// DBTITLE 1,Read the csv file into a dataframe
-val defaultersDf = loadDataInDataframe("loan_defaulters",loanDefaultersSchema, "raw_data", ".csv", "csv", "true", ",")
+// MAGIC %md
+// MAGIC #####Read the csv file into a dataframe
 
 // COMMAND ----------
 
-display(defaultersDf)
+val defaultersDf = loadDataInDataframe("loan_defaulters",loanDefaultersSchema, "raw", ".csv", "csv", "true", ",")
 
 // COMMAND ----------
 
-// DBTITLE 1,Rename the columns to a better understandable way
-val renamedCustomerDf=customerDf.withColumnRenamed("cust_id","customer_id")
-                            .withColumnRenamed("mem_id","member_id")
-                            .withColumnRenamed("fst_name","first_name")
-                            .withColumnRenamed("lst_name","last_name")
-                            .withColumnRenamed("prm_status","premium_status")
-
+// MAGIC %md
+// MAGIC ##### Add the run date to the dataframe
 
 // COMMAND ----------
 
-// DBTITLE 1,Add the run date to the dataframe
 //Include a run date column to signify when it got ingested into our data lake
-val customerDfRunDate=renamedCustomerDf.withColumn("run_date", lit(runDate)) 
+val defaultersDfRunDate=addRunDate(defaultersDf,runDate)
 
 // COMMAND ----------
 
-// DBTITLE 1,Add a surrogate key to the dataframe
-//Include a customer_key column which acts like a surrogate key in the table
-//SHA-2 (Secure Hash Algorithm 2) is a set of cryptographic hash functions. It produces a 256-bit (32-byte) hash value and is generally considered to be a more secure.
-val customerData=customerDfRunDate.withColumn("customer_key", sha2(concat(col("member_id"),col("age"),col("state")), 256))
+// MAGIC %md
+// MAGIC ##### Add a surrogate key to the dataframe
+// MAGIC
+
+// COMMAND ----------
+
+//Include a loan_default_key column which acts like a surrogate key in the table
+val defaultersDfKey=defaultersDfRunDate.withColumn("loan_default_key", sha2(concat(col("loan_id"),col("mem_id"),col("def_id")), 256))
+
+// COMMAND ----------
+
+// MAGIC %md
+// MAGIC ##### Replace the NULL strings into NULL values
+
+// COMMAND ----------
+
+
+// List of column names to replace "null" with null
+val columnsToReplace = defaultersDfKey.columns
+
+// Replace "null" with null values for the specified columns
+val defaultersData = columnsToReplace.foldLeft(defaultersDfKey) { (accDf, colName) =>
+  accDf.withColumn(colName, when(col(colName) === "null", lit(null)).otherwise(col(colName)))
+}
+
+
+// COMMAND ----------
+
+// MAGIC %md #####Rename the columns to a better understandable way
+
+// COMMAND ----------
+
+val renamedDefaultersDf=defaultersData.withColumnRenamed("mem_id", "member_id") 
+                                      .withColumnRenamed("def_id", "loan_default_id") 
+                                      .withColumnRenamed("delinq_2yrs", "defaulters_2yrs") 
+                                      .withColumnRenamed("delinq_amnt", "defaulters_amount") 
+                                      .withColumnRenamed("pub_rec", "public_records") 
+                                      .withColumnRenamed("pub_rec_bankruptcies", "public_records_bankruptcies") 
+                                      .withColumnRenamed("inq_last_6mths", "enquiries_6mnths") 
+                                      .withColumnRenamed("total_rec_late_fee", "late_fee") 
+
+
+// COMMAND ----------
+
+// MAGIC %md 
+// MAGIC ##### Use Spark SQL to query the data
+
+// COMMAND ----------
+
+renamedDefaultersDf.createOrReplaceTempView("temp")
+val finalDefaultersDf=spark.sql("""select loan_default_key, run_date, loan_id,member_id,loan_default_id,defaulters_2yrs,defaulters_amount,public_records,public_records_bankruptcies,enquiries_6mnths,late_fee,hardship_flag,hardship_type,hardship_length,hardship_amount from temp""")
+//display(finalDefaultersDf)
+
+// COMMAND ----------
+
+// MAGIC %md
+// MAGIC ##### Write the cleaned dataframe into data lake
+
+// COMMAND ----------
+
+writePartitionDataInParquetAndCreateTable("defaulters","work",finalDefaultersDf,"work","run_date")
 
 // COMMAND ----------
 
@@ -62,6 +113,4 @@ fileMoveToArchive("loan_customer_data")
 
 // COMMAND ----------
 
-// DBTITLE 1,Write the cleaned dataframe into data lake
-//write the final cleaned customers data to data lake
-//display_df.write.options(header='True').mode("append").parquet("/mnt/datasetbigdata/processed-data/lending_loan/customer_details")
+dbutils.notebook.exit("executed loan defaulters job")

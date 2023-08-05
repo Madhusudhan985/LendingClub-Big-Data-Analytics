@@ -3,94 +3,109 @@
 
 // COMMAND ----------
 
-// //Infer the schema of the payments's data
-
-// val paymentSchema = StructType(List(
-//                               StructField("loan_id", StringType, false),
-//                               StructField("mem_id", StringType, false),
-//                               StructField("latest_transaction_id", StringType, false),
-//                               StructField("funded_amnt_inv", DoubleType, true),
-//                               StructField("total_pymnt_rec", FloatType, true),
-//                               StructField("installment", FloatType, true),
-//                               StructField("last_pymnt_amnt", FloatType, true),
-//                               StructField("last_pymnt_d", DateType, true),
-//                               StructField("next_pymnt_d", DateType, true),
-//                               StructField("pymnt_method", StringType, true)
-//                               )
-//                           )
-
-
-// COMMAND ----------
-
-//Infer the schema of the payments's data
-
+// Define the payment schema
 val paymentSchema = StructType(List(
-                              StructField("loan_id", StringType, false),
-                              StructField("mem_id", StringType, false),
-                              StructField("latest_transaction_id", StringType, false),
-                              StructField("funded_amnt_inv", DoubleType, true),
-                              StructField("total_pymnt_rec", FloatType, true),
-                              StructField("installment", FloatType, true),
-                              StructField("last_pymnt_amnt", FloatType, true),
-                              StructField("last_pymnt_d", StringType, true),
-                              StructField("next_pymnt_d", StringType, true),
-                              StructField("pymnt_method", StringType, true)
+      StructField("loan_id", StringType, nullable = false),
+      StructField("mem_id", StringType, nullable = false),
+      StructField("latest_transaction_id", StringType, nullable = false),
+      StructField("funded_amnt_inv", DoubleType, nullable = true),
+      StructField("total_pymnt_rec", FloatType, nullable = true),
+      StructField("installment", FloatType, nullable = true),
+      StructField("last_pymnt_amnt", FloatType, nullable = true),
+      StructField("last_pymnt_d", DateType, nullable = true),
+      StructField("next_pymnt_d", DateType, nullable = true),
+      StructField("pymnt_method", StringType, nullable = true)
+                                     )
                               )
-                          )
-
 
 // COMMAND ----------
 
-// DBTITLE 1,Read the csv file into a dataframe
-val paymentDf = loadDataInDataframe("loan_payment",StructType(Nil), "raw_data", ".csv", "csv", "true", ",")
+// MAGIC %md #####Read the csv file into a dataframe
 
 // COMMAND ----------
 
-display(paymentDf)
+// Read the DataFrame (paymentDf) from  function
+val paymentDf: DataFrame = loadDataInDataframe("loan_payment",paymentSchema,"raw", ".csv", "csv", "true", ",")
 
 // COMMAND ----------
 
-// DBTITLE 1,Replace the NULL strings into NULL values
+// MAGIC %md #####Add the run date to the dataframe
+
+// COMMAND ----------
+
+//Include a run date column to signify when it got ingested into our data lake
+val paymentDfRunDate=addRunDate(paymentDf,runDate)
+
+// COMMAND ----------
+
+// MAGIC %md #####Add a surrogate key to the dataframe
+
+// COMMAND ----------
+
+//Include a payment_key column which acts like a surrogate key in the table
+val paymentDfKey=paymentDfRunDate.withColumn("payment_key", sha2(concat(col("loan_id"),col("mem_id"),col("latest_transaction_id")), 256))
+
+// COMMAND ----------
+
+// MAGIC %md #####Replace the NULL strings into NULL values
+
+// COMMAND ----------
 
 // List of column names to replace "null" with null
-val columnsToReplace = paymentDf.columns
+val columnsToReplace = paymentDfKey.columns
 
 // Replace "null" with null values for the specified columns
-val loanData = columnsToReplace.foldLeft(paymentDf) { (accDf, colName) =>
+val paymentNullDf = columnsToReplace.foldLeft(paymentDfKey) { (accDf, colName) =>
   accDf.withColumn(colName, when(col(colName) === "null", lit(null)).otherwise(col(colName)))
 }
 
 
 // COMMAND ----------
 
-// DBTITLE 1,Rename the columns to a better understandable way
-val renamedCustomerDf=customerDf.withColumnRenamed("cust_id","customer_id")
-                            .withColumnRenamed("mem_id","member_id")
-                            .withColumnRenamed("fst_name","first_name")
-                            .withColumnRenamed("lst_name","last_name")
-                            .withColumnRenamed("prm_status","premium_status")
+// MAGIC %md #####Rename columns in the dataframe
+
+// COMMAND ----------
+
+val paymentData=paymentNullDf.withColumnRenamed("mem_id","member_id") 
+                             .withColumnRenamed("funded_amnt_inv","funded_amount_investor") 
+                             .withColumnRenamed("total_pymnt_rec","total_payment_recorded") 
+                             .withColumnRenamed("last_pymnt_amnt","last_payment_amount") 
+                             .withColumnRenamed("last_pymnt_d","last_payment_date") 
+                             .withColumnRenamed("next_pymnt_d","next_payment_date") 
+                             .withColumnRenamed("pymnt_method","payment_method") 
+
 
 
 // COMMAND ----------
 
-// DBTITLE 1,Add the run date to the dataframe
-//Include a run date column to signify when it got ingested into our data lake
-val customerDfRunDate=renamedCustomerDf.withColumn("run_date", lit(runDate)) 
+// MAGIC %md 
+// MAGIC ##### Use Spark SQL to query the data
 
 // COMMAND ----------
 
-// DBTITLE 1,Add a surrogate key to the dataframe
-//Include a customer_key column which acts like a surrogate key in the table
-//SHA-2 (Secure Hash Algorithm 2) is a set of cryptographic hash functions. It produces a 256-bit (32-byte) hash value and is generally considered to be a more secure.
-val customerData=customerDfRunDate.withColumn("customer_key", sha2(concat(col("member_id"),col("age"),col("state")), 256))
+paymentData.createOrReplaceTempView("temp_table")
+val finalPaymentDf=spark.sql("""select payment_key,run_date,loan_id,member_id,latest_transaction_id,funded_amount_investor,total_payment_recorded, installment,last_payment_amount,last_payment_date,next_payment_date,payment_method from temp_table""")
+display(finalPaymentDf)
+
 
 // COMMAND ----------
 
-// DBTITLE 1,Move the input file to archive for future use.
-fileMoveToArchive("loan_customer_data")
+// MAGIC %md
+// MAGIC #####Write the cleaned dataframe into data lake
 
 // COMMAND ----------
 
-// DBTITLE 1,Write the cleaned dataframe into data lake
-//write the final cleaned customers data to data lake
-//display_df.write.options(header='True').mode("append").parquet("/mnt/datasetbigdata/processed-data/lending_loan/customer_details")
+writePartitionDataInParquetAndCreateTable("payments","work",finalPaymentDf,"work","run_date")
+
+
+// COMMAND ----------
+
+// MAGIC %md ##### Move the input file to archive for future use.
+
+// COMMAND ----------
+
+fileMoveToArchive("loan_payment")
+
+// COMMAND ----------
+
+dbutils.notebook.exit("executed payments job")

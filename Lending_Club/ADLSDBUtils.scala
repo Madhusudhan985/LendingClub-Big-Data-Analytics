@@ -26,7 +26,6 @@ def loadDataInDataframe(tableName:String,schema:StructType,inBoundSource:String,
   .option("nullValue",null)
   .option("nullValue","")
   .option("quote","\"")
-  .option("mode","FAILFAST")
   .schema(schema)
   .load(container+inBoundSource+"/"+tableName+tableNameSuffix).drop("ExtraColumn")
 }
@@ -41,9 +40,23 @@ def writePartitionDataInDeltaLakeAndCreateTable(tableName:String,tableSchema:Str
   .partitionBy(partitionColName)
   .save(container+deltaPath+"/"+tableName+"/")
 
-  spark.sql("CREATE TABLE IF NOT EXISTS"+tableSchema+"."+tableName+" USING DELTA LOCATION '"+container+deltaPath+"/"+tableName+"/' ");
+  spark.sql("CREATE TABLE IF NOT EXISTS "+tableSchema+"."+tableName+" USING DELTA LOCATION '"+container+deltaPath+"/"+tableName+"/' ");
   
 }
+
+// COMMAND ----------
+
+def writePartitionDataInParquetAndCreateTable(tableName: String, tableSchema: String, data: DataFrame, parquetPath: String, partitionColName: String) = {
+  println("Writing table:" + tableName)
+  data.write
+    .format("parquet")
+    .mode("overwrite")
+    .partitionBy(partitionColName)
+    .save(container + parquetPath + "/" + tableName + "/")
+
+  spark.sql("CREATE TABLE IF NOT EXISTS " + tableSchema + "." + tableName + " USING PARQUET OPTIONS (PATH '" + container + parquetPath + "/" + tableName + "/')")
+}
+
 
 // COMMAND ----------
 
@@ -73,7 +86,3 @@ def addRunDate(input_df: DataFrame, runDate: LocalDate): DataFrame = {
     val date_df = input_df.withColumn("run_date", lit(runDate))
     date_df
 }
-
-// COMMAND ----------
-
-

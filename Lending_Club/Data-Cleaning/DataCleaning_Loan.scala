@@ -23,13 +23,16 @@ val loanSchema = StructType(List(
 
 // COMMAND ----------
 
-// DBTITLE 1,Read the csv file into a dataframe
-val loanDf = loadDataInDataframe("loan_details",loanSchema, "raw_data", ".csv", "csv", "true", ",")
+// MAGIC %md #####Read the csv file into a dataframe
+
+// COMMAND ----------
+
+val loanDf = loadDataInDataframe("loan_details",loanSchema, "raw", ".csv", "csv", "true", ",")
 
 // COMMAND ----------
 
 // MAGIC %md
-// MAGIC ### Step 03: Cleaning Techniques to include
+// MAGIC ##### Cleaning Techniques to include
 
 // COMMAND ----------
 
@@ -49,7 +52,7 @@ for ((colName, stringToRemove) <- stringsToRemove) {
 // COMMAND ----------
 
 // MAGIC %md
-// MAGIC ### Rename columns in the dataframe
+// MAGIC ##### Rename columns in the dataframe
 
 // COMMAND ----------
 
@@ -60,20 +63,29 @@ val renamedLoanDf=cleanedDf.withColumnRenamed("mem_id","member_id")
 
 // COMMAND ----------
 
-// DBTITLE 1,Add the run date to the dataframe
+// MAGIC %md #####Add the run date to the dataframe
+
+// COMMAND ----------
+
 //Include a run date column to signify when it got ingested into our data lake
 val loanDfRunDate=addRunDate(renamedLoanDf,runDate)
 
 // COMMAND ----------
 
-// DBTITLE 1,Add a surrogate key to the dataframe
+// MAGIC %md ##### Add a surrogate key to the dataframe
+
+// COMMAND ----------
+
 //Include a loan_key column which acts like a surrogate key in the table
 val loanDfKey=loanDfRunDate.withColumn("loan_key", sha2(concat(col("loan_id"),col("member_id"),col("loan_amount")), 256))
 
 
 // COMMAND ----------
 
-// DBTITLE 1,Replace the NULL strings into NULL values
+// MAGIC %md ##### Replace the NULL strings into NULL values
+
+// COMMAND ----------
+
 
 // List of column names to replace "null" with null
 val columnsToReplace = loanDfKey.columns
@@ -86,11 +98,28 @@ val loanData = columnsToReplace.foldLeft(loanDfKey) { (accDf, colName) =>
 
 // COMMAND ----------
 
+// MAGIC %md ##### Use Spark SQL to query the data
+
+// COMMAND ----------
+
+loanData.createOrReplaceTempView("temp_table")
+val finalLoanDf=spark.sql("""select loan_key, run_date,loan_id,member_id,account_id,loan_amount,funded_amount,term,interest,installment,issue_date,loan_status,purpose,title,disbursement_method from temp_table""")
+//display(finalLoanDf)
+
+// COMMAND ----------
+
+// MAGIC %md
+// MAGIC ##### Write the cleaned dataframe into data lake
+
+// COMMAND ----------
+
+writePartitionDataInParquetAndCreateTable("loans","work",finalLoanDf,"work","run_date")
+
+// COMMAND ----------
+
 // DBTITLE 1,Move the input file to archive for future use.
 fileMoveToArchive("loan_details")
 
 // COMMAND ----------
 
-// DBTITLE 1,Write the cleaned dataframe into data lake
-//write the final cleaned customers data to data lake
-//display_df.write.options(header='True').mode("append").parquet("/mnt/datasetbigdata/processed-data/lending_loan/customer_details")
+dbutils.notebook.exit("executed loan job")

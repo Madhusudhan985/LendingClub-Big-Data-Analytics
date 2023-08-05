@@ -3,7 +3,7 @@
 
 // COMMAND ----------
 
-//Infer the schema of the accounts's data
+//Define accounts data Schema
 val accountSchema = StructType(List(
                                      StructField("acc_id", StringType, false),
                                      StructField("mem_id", StringType, false),
@@ -25,12 +25,12 @@ val accountSchema = StructType(List(
 
 // COMMAND ----------
 
-// DBTITLE 1,Read the csv file into a dataframe
-val accountDf = loadDataInDataframe("account_details",accountSchema, "raw_data", ".csv", "csv", "true", ",")
+// MAGIC %md
+// MAGIC ###Read the csv file into a dataframe
 
 // COMMAND ----------
 
-display(accountDf)
+val accountDf = loadDataInDataframe("account_details",accountSchema, "raw", ".csv", "csv", "true", ",")
 
 // COMMAND ----------
 
@@ -47,64 +47,68 @@ val cleanAccountDf = accountDf
 
 // COMMAND ----------
 
-    // List of columns to process
-    val columnsToProcess = Seq("col1", "col2", "col3")
-
-    // Replace "null" strings with null values and cast to FloatType
-    val updatedAccountDf = columnsToProcess.foldLeft(accountDf) { (accDf, colName) =>
-      accDf.withColumn(colName, when(col(colName) === "null", lit(null)).otherwise(col(colName)))
-        .withColumn(colName, col(colName).cast("float"))
-    }
-
-    // Show the updated DataFrame
-    updatedAccountDf.show()
-
-    // Stop the Spark session
-    spark.stop()
-  }
-}
-
+// MAGIC %md
+// MAGIC ### Add the run date to the dataframe
 
 // COMMAND ----------
 
-display(cleanAccountDf)
-
-// COMMAND ----------
-
-cleanAccountDf.createOrReplaceTempView("temp")
-val display_df=spark.sql("select * from temp where tot_hi_cred_lim is null ")
-display(display_df)
-
-// COMMAND ----------
-
-// DBTITLE 1,Rename the columns to a better understandable way
-val renamedCustomerDf=cleanAccountDf.withColumnRenamed("cust_id","customer_id")
-                            .withColumnRenamed("mem_id","member_id")
-                            .withColumnRenamed("fst_name","first_name")
-                            .withColumnRenamed("lst_name","last_name")
-                            .withColumnRenamed("prm_status","premium_status")
-
-
-// COMMAND ----------
-
-// DBTITLE 1,Add the run date to the dataframe
 //Include a run date column to signify when it got ingested into our data lake
-val customerDfRunDate=renamedCustomerDf.withColumn("run_date", lit(runDate)) 
+val accountDfRunDate=addRunDate(cleanAccountDf,runDate)
 
 // COMMAND ----------
 
-// DBTITLE 1,Add a surrogate key to the dataframe
-//Include a customer_key column which acts like a surrogate key in the table
-//SHA-2 (Secure Hash Algorithm 2) is a set of cryptographic hash functions. It produces a 256-bit (32-byte) hash value and is generally considered to be a more secure.
-val customerData=customerDfRunDate.withColumn("customer_key", sha2(concat(col("member_id"),col("age"),col("state")), 256))
+// MAGIC %md
+// MAGIC ### Add a surrogate key to the dataframe
+// MAGIC
 
 // COMMAND ----------
 
-// DBTITLE 1,Move the input file to archive for future use.
+//Include a account_key column which acts like a surrogate key in the table
+val accountDfKey=accountDfRunDate.withColumn("account_key", sha2(concat(col("acc_id"),col("mem_id"),col("loan_id")), 256))
+
+// COMMAND ----------
+
+// MAGIC %md
+// MAGIC ### Rename columns in the dataframe
+
+// COMMAND ----------
+
+val accountDfRename=accountDfKey.withColumnRenamed("acc_id","account_id") 
+                                .withColumnRenamed("mem_id","member_id") 
+                                .withColumnRenamed("emp_title","employee_designation") 
+                                .withColumnRenamed("emp_length","employee_experience") 
+                                .withColumnRenamed("annual_inc","annual_income") 
+                                .withColumnRenamed("tot_hi_cred_lim","total_high_credit_limit") 
+                                .withColumnRenamed("annual_inc_joint","annual_income_joint") 
+
+
+
+// COMMAND ----------
+
+// MAGIC %md 
+// MAGIC ##### Use Spark SQL to query the data
+
+// COMMAND ----------
+
+accountDfRename.createOrReplaceTempView("temp_table")
+val finalAccountDf=spark.sql("""select account_key,run_date,account_id,member_id,loan_id,grade,sub_grade,employee_designation,employee_experience,home_ownership,annual_income,verification_status,total_high_credit_limit,application_type,annual_income_joint,verification_status_joint from temp_table """)
+
+
+// COMMAND ----------
+
+// MAGIC %md
+// MAGIC #####Write the cleaned dataframe into data lake
+
+// COMMAND ----------
+
+writePartitionDataInParquetAndCreateTable("accounts","work",finalAccountDf,"work","run_date")
+
+
+// COMMAND ----------
+
+// MAGIC %md
+// MAGIC ###Move the input file to archive for future use.
+
+// COMMAND ----------
+
 fileMoveToArchive("loan_customer_data")
-
-// COMMAND ----------
-
-// DBTITLE 1,Write the cleaned dataframe into data lake
-//write the final cleaned customers data to data lake
-//display_df.write.options(header='True').mode("append").parquet("/mnt/datasetbigdata/processed-data/lending_loan/customer_details")
