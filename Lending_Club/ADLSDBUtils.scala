@@ -1,34 +1,20 @@
 // Databricks notebook source
-import org.apache.spark.sql.types.{StructType,StructField,IntegerType,StringType,DoubleType,FloatType,TimestampType}
+import java.io.File
+import java.time.LocalDate
+import java.util.Date
+import org.apache.spark.sql.types._
+//import org.apache.spark.sql.types.{StructType,StructField,IntegerType,StringType,DoubleType,FloatType,TimestampType,DataType}
 import org.apache.spark.sql.functions.{col,concat,current_timestamp,sha2,regexp_replace,lit,to_date}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{SparkSession, DataFrame}
 
 // COMMAND ----------
 
-val adlsRawFilePath = "/mnt/lendingClub/"
-val adlsDeltaTableFilePath ="/mnt/lendingClub/"
-
-// COMMAND ----------
-
-// DBTITLE 1,Mounting
-val configs =  Map(
-  "fs.azure.account.auth.type" -> "OAuth",
-  "fs.azure.account.oauth.provider.type" -> "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider",
-  "fs.azure.account.oauth2.client.id"  ->s"61438f0b-28e0-48bc-92ab-698cb40e129a",
-  "fs.azure.account.oauth2.client.secret" ->s"bED8Q~OB8gldQGcYdkhFyqoUacgKULoCopzZNc7D",
-  "fs.azure.account.oauth2.client.endpoint" ->s"https://login.microsoftonline.com/7299dff3-9f02-46f8-bd12-5ec6d1fb678c/oauth2/token"
-)
-
-
-// COMMAND ----------
-
-//Mounting ADLS Storage to DBFS
-dbutils.fs.mount(
-  source = "abfss://lendingclub@lendingstoragesumit.dfs.core.windows.net/",
-  mountPoint = "/mnt/lendingClub",
-  extraConfigs = configs
-)
+val container = "/mnt/lendingClub/"
+val runDate = java.time.LocalDate.now() // Call the function to get the current date
+val clrRqstDir = container + "raw_data/"
+val destLocation = "/dbfs" + clrRqstDir + "archive/run_date=" + runDate
+val rqstTemplateExtension = "csv"
 
 // COMMAND ----------
 
@@ -39,10 +25,10 @@ def loadDataInDataframe(tableName:String,schema:StructType,inBoundSource:String,
   .option("delimiter",delimiter)
   .option("nullValue",null)
   .option("nullValue","")
-  .option("quote","")
+  .option("quote","\"")
   .option("mode","FAILFAST")
   .schema(schema)
-  .load(adlsRawFilePath+inBoundSource+"/"+tableName+tableNameSuffix).drop("ExtraColumn")
+  .load(container+inBoundSource+"/"+tableName+tableNameSuffix).drop("ExtraColumn")
 }
 
 // COMMAND ----------
@@ -53,10 +39,39 @@ def writePartitionDataInDeltaLakeAndCreateTable(tableName:String,tableSchema:Str
   .format("delta")
   .mode("overwrite")
   .partitionBy(partitionColName)
-  .save(adlsDeltaTableFilePath+deltaPath+"/"+tableName+"/")
+  .save(container+deltaPath+"/"+tableName+"/")
 
-  spark.sql("CREATE TABLE IF NOT EXISTS"+tableSchema+"."+tableName+" USING DELTA LOCATION '"+adlsDeltaTableFilePath+deltaPath+"/"+tableName+"/' ");
+  spark.sql("CREATE TABLE IF NOT EXISTS"+tableSchema+"."+tableName+" USING DELTA LOCATION '"+container+deltaPath+"/"+tableName+"/' ");
   
+}
+
+// COMMAND ----------
+
+def fileMoveToArchive(rqstFileName: String): Unit = {
+  val destDir = new File(destLocation)
+  if (!destDir.isDirectory) {
+    destDir.mkdir()
+  }
+  val sourceFile = new File("/dbfs/" + clrRqstDir + rqstFileName + "." + rqstTemplateExtension)
+  val destinationFile = new File(destLocation + "/" + rqstFileName + "." + rqstTemplateExtension)
+  
+  try {
+    if (sourceFile.renameTo(destinationFile)) {
+      println("File Moved Successfully.")
+    } else {
+      println("File Move Failed.")
+    }
+  } catch {
+    case e: Exception => println("An error occurred: " + e.getMessage)
+  }
+}
+
+
+// COMMAND ----------
+
+def addRunDate(input_df: DataFrame, runDate: LocalDate): DataFrame = {
+    val date_df = input_df.withColumn("run_date", lit(runDate))
+    date_df
 }
 
 // COMMAND ----------
