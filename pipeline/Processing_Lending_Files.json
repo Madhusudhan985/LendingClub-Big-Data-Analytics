@@ -3,12 +3,6 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "ForEach1",
-				"type": "ForEach",
-				"dependsOn": [],
-				"userProperties": []
-			},
-			{
 				"name": "Processing_Lending_Files",
 				"type": "DatabricksNotebook",
 				"dependsOn": [],
@@ -29,11 +23,6 @@
 				}
 			}
 		],
-		"variables": {
-			"Count": {
-				"type": "String"
-			}
-		},
 		"annotations": []
 	}
 }
