@@ -1,4 +1,8 @@
 // Databricks notebook source
+// MAGIC %run ../ADLSDBUtils
+
+// COMMAND ----------
+
 // MAGIC %sql
 // MAGIC CREATE DATABASE IF NOT EXISTS work;
 
@@ -135,4 +139,16 @@
 
 // COMMAND ----------
 
-dbutils.notebook.run("Lending_Club/Data-Transformation/Customer-Transformations", timeoutSeconds = 600)
+ val parentPath = dbutils.notebook.getContext().notebookPath
+      .getOrElse("")
+      .split("/")
+      .dropRight(1)
+      .mkString("/")
+
+// COMMAND ----------
+
+dbutils.notebook.run(s"$parentPath/Customer-Transformations", timeoutSeconds = 600,Map("parentPath" -> parentPath))
+
+// COMMAND ----------
+
+

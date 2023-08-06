@@ -123,4 +123,8 @@ customersAvgAge.createOrReplaceTempView("customersAvgAge")
 
 // COMMAND ----------
 
-dbutils.notebook.run("Lending_Club/Data-Transformation/loan-score-customers", timeoutSeconds = 600)
+val parentPath = dbutils.widgets.get("parentPath")
+
+// COMMAND ----------
+
+dbutils.notebook.run(s"$parentPath/loan-score-customers", timeoutSeconds = 600)

@@ -36,7 +36,7 @@ def writePartitionDataInDeltaLakeAndCreateTable(tableName:String,tableSchema:Str
   println("Writing table:"+tableName)
   data.write
   .format("delta")
-  .mode("overwrite")
+  .mode("append")
   .partitionBy(partitionColName)
   .save(container+deltaPath+"/"+tableName+"/")
 
@@ -50,7 +50,7 @@ def writePartitionDataInParquetAndCreateTable(tableName: String, tableSchema: St
   println("Writing table:" + tableName)
   data.write
     .format("parquet")
-    .mode("overwrite")
+    .mode("append")
     .partitionBy(partitionColName)
     .save(container + parquetPath + "/" + tableName + "/")
 
@@ -64,7 +64,7 @@ def writePartitionDataInParquet(tableName: String,data: DataFrame, parquetPath: 
   println("Writing table:" + tableName)
   data.write
     .format("parquet")
-    .mode("overwrite")
+    .mode("append")
     .partitionBy(partitionColName)
     .save(container + parquetPath + "/" + tableName + "/")
 }

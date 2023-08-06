@@ -117,6 +117,11 @@ writePartitionDataInParquet("LOAN_DETAILS",finalLoanDf,"work/lendingloan","run_d
 
 // COMMAND ----------
 
+// MAGIC %sql
+// MAGIC msck repair table work.loan_details
+
+// COMMAND ----------
+
 // DBTITLE 1,Move the input file to archive for future use.
 fileMoveToArchive("loan_details")
 

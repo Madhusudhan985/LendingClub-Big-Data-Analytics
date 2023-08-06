@@ -66,6 +66,11 @@ writePartitionDataInParquet("INVESTOR_DETAILS",finalInvestorDf,"work/lendingloan
 
 // COMMAND ----------
 
+// MAGIC %sql
+// MAGIC msck repair table work.investor_details
+
+// COMMAND ----------
+
 // MAGIC %md #####Move the input file to archive for future use.
 
 // COMMAND ----------
