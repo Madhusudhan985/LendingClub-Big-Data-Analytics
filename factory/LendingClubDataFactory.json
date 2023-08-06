@@ -1,0 +1,9 @@
+{
+	"name": "LendingClubDataFactory",
+	"location": "centralindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "c06d92d0-f484-47b5-bf47-6d3afd89bf3d",
+		"tenantId": "7299dff3-9f02-46f8-bd12-5ec6d1fb678c"
+	}
+}
