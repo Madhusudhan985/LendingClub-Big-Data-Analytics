@@ -1,15 +1,9 @@
 {
-	"name": "Lending_Club",
+	"name": "Processing_Lending_Files",
 	"properties": {
 		"activities": [
 			{
-				"name": "ForEach1",
-				"type": "ForEach",
-				"dependsOn": [],
-				"userProperties": []
-			},
-			{
-				"name": "Aumation_Of_Lending_Club_Project",
+				"name": "Processing_Lending_Files",
 				"type": "DatabricksNotebook",
 				"dependsOn": [],
 				"policy": {
@@ -29,11 +23,6 @@
 				}
 			}
 		],
-		"variables": {
-			"Count": {
-				"type": "String"
-			}
-		},
 		"annotations": []
 	}
 }

@@ -1,9 +1,9 @@
 {
-	"name": "pipeline1",
+	"name": "Transfomations_On_Processed_Files",
 	"properties": {
 		"activities": [
 			{
-				"name": "Notebook1",
+				"name": "Transforming_Processed_Files",
 				"type": "DatabricksNotebook",
 				"dependsOn": [],
 				"policy": {
@@ -15,7 +15,7 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"notebookPath": "/Repos/madhusudhanraomulagala@gmail.com/Lending_Club/Lending_Club/Testing"
+					"notebookPath": "/Repos/madhusudhanraomulagala@gmail.com/Lending_Club/Lending_Club/Data-Transformation/Tables"
 				},
 				"linkedServiceName": {
 					"referenceName": "LinkedDatabricksService",
