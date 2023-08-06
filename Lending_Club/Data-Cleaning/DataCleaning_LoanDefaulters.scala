@@ -108,6 +108,11 @@ writePartitionDataInParquet("DEFAULTER_DETAILS",finalDefaultersDf,"work/lendingl
 
 // COMMAND ----------
 
+// MAGIC %sql
+// MAGIC msck repair table work.defaulter_details
+
+// COMMAND ----------
+
 // DBTITLE 1,Move the input file to archive for future use.
 fileMoveToArchive("loan_defaulters")
 

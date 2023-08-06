@@ -1,5 +1,5 @@
 // Databricks notebook source
-//calculate score for customers payment history
+// MAGIC %run ../ADLSDBUtils
 
 // COMMAND ----------
 
@@ -278,3 +278,7 @@ spark.sql("select * from loan_final_table where loan_final_grade in ('A') ").sho
 // MAGIC --USING PARQUET
 // MAGIC --LOCATION '/mnt/datasetbigdata/processed-data/lending-loan/customer-transformations/customers_loan_score'
 // MAGIC --select * from loan_final_table
+
+// COMMAND ----------
+
+dbutils.notebook.exit("Successfully Completed.")
