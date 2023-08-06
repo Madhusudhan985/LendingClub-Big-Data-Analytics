@@ -24,6 +24,7 @@
 					],
 					"storeSettings": {
 						"type": "AzureBlobStorageReadSettings",
+						"recursive": true,
 						"enablePartitionDiscovery": false
 					},
 					"formatSettings": {
@@ -70,30 +71,14 @@
 					"expression": {
 						"value": "@equals(activity('Filter1').output.FilteredItemsCount, 6)\n",
 						"type": "Expression"
-					},
-					"ifTrueActivities": [
-						{
-							"name": "Notebook1",
-							"type": "DatabricksNotebook",
-							"dependsOn": [],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"notebookPath": "/Repos/madhusudhanraomulagala@gmail.com/Lending_Club/Lending_Club/Testing"
-							},
-							"linkedServiceName": {
-								"referenceName": "LinkedDatabricksService",
-								"type": "LinkedServiceReference"
-							}
-						}
-					]
+					}
 				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [],
+				"userProperties": []
 			}
 		],
 		"variables": {
