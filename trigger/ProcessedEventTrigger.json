@@ -13,7 +13,7 @@
 		],
 		"type": "BlobEventsTrigger",
 		"typeProperties": {
-			"blobPathBeginsWith": "/lendingclub/blobs/'work/'",
+			"blobPathBeginsWith": "/lendingclub/blobs/work",
 			"blobPathEndsWith": ".txt",
 			"ignoreEmptyBlobs": true,
 			"scope": "/subscriptions/bac6087f-93aa-46cc-9ba7-2e863831218a/resourceGroups/Bigdata/providers/Microsoft.Storage/storageAccounts/lendingstoragesumit",
