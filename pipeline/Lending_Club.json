@@ -9,7 +9,7 @@
 				"userProperties": []
 			},
 			{
-				"name": "Aumation_Of_Lending_Club_Project",
+				"name": "Processing_Lending_Files",
 				"type": "DatabricksNotebook",
 				"dependsOn": [],
 				"policy": {
