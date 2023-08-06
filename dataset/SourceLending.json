@@ -1,0 +1,84 @@
+{
+	"name": "SourceLending",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LinkedBlobService",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"folderPath": "raw/lendingloan",
+				"container": "lendingclub"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "acc_id",
+				"type": "String"
+			},
+			{
+				"name": "mem_id",
+				"type": "String"
+			},
+			{
+				"name": "loan_id",
+				"type": "String"
+			},
+			{
+				"name": "grade",
+				"type": "String"
+			},
+			{
+				"name": "sub_grade",
+				"type": "String"
+			},
+			{
+				"name": "emp_title",
+				"type": "String"
+			},
+			{
+				"name": "emp_length",
+				"type": "String"
+			},
+			{
+				"name": "home_ownership",
+				"type": "String"
+			},
+			{
+				"name": "annual_inc",
+				"type": "String"
+			},
+			{
+				"name": "verification_status",
+				"type": "String"
+			},
+			{
+				"name": "tot_hi_cred_lim",
+				"type": "String"
+			},
+			{
+				"name": "application_type",
+				"type": "String"
+			},
+			{
+				"name": "annual_inc_joint",
+				"type": "String"
+			},
+			{
+				"name": "verification_status_joint",
+				"type": "String"
+			},
+			{
+				"name": "run_date",
+				"type": "String"
+			}
+		]
+	}
+}

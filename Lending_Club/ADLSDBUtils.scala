@@ -6,6 +6,7 @@ import org.apache.spark.sql.types._
 import org.apache.spark.sql.functions.{col,concat,current_timestamp,sha2,regexp_replace,lit,to_date}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{SparkSession, DataFrame}
+import java.io.PrintWriter
 
 // COMMAND ----------
 
@@ -95,4 +96,13 @@ def fileMoveToArchive(rqstFileName: String): Unit = {
 def addRunDate(input_df: DataFrame, runDate: LocalDate): DataFrame = {
     val date_df = input_df.withColumn("run_date", lit(runDate))
     date_df
+}
+
+// COMMAND ----------
+
+def createTouchFile(location: String)=
+{
+  val writer = new PrintWriter(location)
+  writer.write("1")
+  writer.close()
 }

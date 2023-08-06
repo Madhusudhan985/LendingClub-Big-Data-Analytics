@@ -120,3 +120,7 @@ customersAvgAge.createOrReplaceTempView("customersAvgAge")
 
 // MAGIC %sql
 // MAGIC SELECT * FROM cooked.customers_avg_age
+
+// COMMAND ----------
+
+dbutils.notebook.run("Lending_Club/Data-Transformation/loan-score-customers", timeoutSeconds = 600)

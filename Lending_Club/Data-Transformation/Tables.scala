@@ -132,3 +132,7 @@
 // MAGIC USING PARQUET
 // MAGIC PARTITIONED BY (run_date)
 // MAGIC LOCATION 'dbfs:/mnt/lendingClub/work/lendingloan/PAYMENT_DETAILS'
+
+// COMMAND ----------
+
+dbutils.notebook.run("Lending_Club/Data-Transformation/Customer-Transformations", timeoutSeconds = 600)
