@@ -115,4 +115,4 @@ fileMoveToArchive("account_details")
 
 // COMMAND ----------
 
-
+ dbutils.notebook.exit("executed accounts job")

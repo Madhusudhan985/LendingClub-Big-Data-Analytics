@@ -3,10 +3,6 @@
 
 // COMMAND ----------
 
-// MAGIC %run ../ADLSDBUtils
-
-// COMMAND ----------
-
 spark.conf.set("spark.sql.unacceptable_rated_pts",0)
 spark.conf.set("spark.sql.very_bad_rated_pts",100)
 spark.conf.set("spark.sql.bad_rated_pts",250)
