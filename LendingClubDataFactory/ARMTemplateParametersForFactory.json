@@ -1,0 +1,21 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "LendingClubDataFactory"
+		},
+		"LinkedBlobService_connectionString": {
+			"value": ""
+		},
+		"LinkedDatabricksService_accessToken": {
+			"value": ""
+		},
+		"LinkedDatabricksService_properties_typeProperties_existingClusterId": {
+			"value": "0729-021527-5nwstw1w"
+		},
+		"ProcessedEventTrigger_properties_typeProperties_scope": {
+			"value": "/subscriptions/bac6087f-93aa-46cc-9ba7-2e863831218a/resourceGroups/Bigdata/providers/Microsoft.Storage/storageAccounts/lendingstoragesumit"
+		}
+	}
+}
