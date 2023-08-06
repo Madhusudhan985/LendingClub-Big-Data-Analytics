@@ -23,7 +23,7 @@ val investorSchema = StructType(List(
 
 // COMMAND ----------
 
-val investorDf = loadDataInDataframe("loan_investors",investorSchema, "raw", ".csv", "csv","true", ",")
+val investorDf = loadDataInDataframe("loan_investors",investorSchema, "raw/lendingloan", ".csv", "csv","true", ",")
 
 // COMMAND ----------
 
@@ -61,7 +61,7 @@ val finalInvestorDf=spark.sql("""select investor_loan_key,run_date,investor_loan
 
 // COMMAND ----------
 
-writePartitionDataInParquetAndCreateTable("investors","work",finalInvestorDf,"work","run_date")
+writePartitionDataInParquet("INVESTOR_DETAILS",finalInvestorDf,"work/lendingloan","run_date")
 
 
 // COMMAND ----------

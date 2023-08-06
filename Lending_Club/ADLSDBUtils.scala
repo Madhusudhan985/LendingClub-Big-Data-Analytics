@@ -3,7 +3,6 @@ import java.io.File
 import java.time.LocalDate
 import java.util.Date
 import org.apache.spark.sql.types._
-//import org.apache.spark.sql.types.{StructType,StructField,IntegerType,StringType,DoubleType,FloatType,TimestampType,DataType}
 import org.apache.spark.sql.functions.{col,concat,current_timestamp,sha2,regexp_replace,lit,to_date}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{SparkSession, DataFrame}
@@ -12,8 +11,8 @@ import org.apache.spark.sql.{SparkSession, DataFrame}
 
 val container = "/mnt/lendingClub/"
 val runDate = java.time.LocalDate.now() // Call the function to get the current date
-val clrRqstDir = container + "raw_data/"
-val destLocation = "/dbfs" + clrRqstDir + "archive/run_date=" + runDate
+val sourceLocation = container + "raw/lendingloan/"
+val destLocation = "/dbfs" + sourceLocation + "archive/run_date=" + runDate
 val rqstTemplateExtension = "csv"
 
 // COMMAND ----------
@@ -60,12 +59,23 @@ def writePartitionDataInParquetAndCreateTable(tableName: String, tableSchema: St
 
 // COMMAND ----------
 
+def writePartitionDataInParquet(tableName: String,data: DataFrame, parquetPath: String, partitionColName: String) = {
+  println("Writing table:" + tableName)
+  data.write
+    .format("parquet")
+    .mode("overwrite")
+    .partitionBy(partitionColName)
+    .save(container + parquetPath + "/" + tableName + "/")
+}
+
+// COMMAND ----------
+
 def fileMoveToArchive(rqstFileName: String): Unit = {
   val destDir = new File(destLocation)
   if (!destDir.isDirectory) {
     destDir.mkdir()
   }
-  val sourceFile = new File("/dbfs/" + clrRqstDir + rqstFileName + "." + rqstTemplateExtension)
+  val sourceFile = new File("/dbfs" + sourceLocation + rqstFileName + "." + rqstTemplateExtension)
   val destinationFile = new File(destLocation + "/" + rqstFileName + "." + rqstTemplateExtension)
   
   try {

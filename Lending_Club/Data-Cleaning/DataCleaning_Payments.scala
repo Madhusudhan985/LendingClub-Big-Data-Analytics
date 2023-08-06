@@ -25,7 +25,7 @@ val paymentSchema = StructType(List(
 // COMMAND ----------
 
 // Read the DataFrame (paymentDf) from  function
-val paymentDf: DataFrame = loadDataInDataframe("loan_payment",paymentSchema,"raw", ".csv", "csv", "true", ",")
+val paymentDf: DataFrame = loadDataInDataframe("loan_payment",paymentSchema,"raw/lendingloan", ".csv", "csv", "true", ",")
 
 // COMMAND ----------
 
@@ -95,7 +95,7 @@ display(finalPaymentDf)
 
 // COMMAND ----------
 
-writePartitionDataInParquetAndCreateTable("payments","work",finalPaymentDf,"work","run_date")
+writePartitionDataInParquet("PAYMENT_DETAILS",finalPaymentDf,"work/lendingloan","run_date")
 
 
 // COMMAND ----------
@@ -109,3 +109,7 @@ fileMoveToArchive("loan_payment")
 // COMMAND ----------
 
 dbutils.notebook.exit("executed payments job")
+
+// COMMAND ----------
+
+

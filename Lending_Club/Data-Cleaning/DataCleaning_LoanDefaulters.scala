@@ -30,7 +30,7 @@ val loanDefaultersSchema = StructType(List(
 
 // COMMAND ----------
 
-val defaultersDf = loadDataInDataframe("loan_defaulters",loanDefaultersSchema, "raw", ".csv", "csv", "true", ",")
+val defaultersDf = loadDataInDataframe("loan_defaulters",loanDefaultersSchema, "raw/lendingloan", ".csv", "csv", "true", ",")
 
 // COMMAND ----------
 
@@ -104,12 +104,12 @@ val finalDefaultersDf=spark.sql("""select loan_default_key, run_date, loan_id,me
 
 // COMMAND ----------
 
-writePartitionDataInParquetAndCreateTable("defaulters","work",finalDefaultersDf,"work","run_date")
+writePartitionDataInParquet("DEFAULTER_DETAILS",finalDefaultersDf,"work/lendingloan","run_date")
 
 // COMMAND ----------
 
 // DBTITLE 1,Move the input file to archive for future use.
-fileMoveToArchive("loan_customer_data")
+fileMoveToArchive("loan_defaulters")
 
 // COMMAND ----------
 

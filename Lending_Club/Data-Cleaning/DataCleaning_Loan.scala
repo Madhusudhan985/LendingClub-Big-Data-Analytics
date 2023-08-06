@@ -27,7 +27,7 @@ val loanSchema = StructType(List(
 
 // COMMAND ----------
 
-val loanDf = loadDataInDataframe("loan_details",loanSchema, "raw", ".csv", "csv", "true", ",")
+val loanDf = loadDataInDataframe("loan_details",loanSchema, "raw/lendingloan", ".csv", "csv", "true", ",")
 
 // COMMAND ----------
 
@@ -113,7 +113,7 @@ val finalLoanDf=spark.sql("""select loan_key, run_date,loan_id,member_id,account
 
 // COMMAND ----------
 
-writePartitionDataInParquetAndCreateTable("loans","work",finalLoanDf,"work","run_date")
+writePartitionDataInParquet("LOAN_DETAILS",finalLoanDf,"work/lendingloan","run_date")
 
 // COMMAND ----------
 
