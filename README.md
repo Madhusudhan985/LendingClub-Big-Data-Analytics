@@ -70,7 +70,7 @@ Problem Statement:
 | Tot_Hi_Cred_Lim       | FloatType    | Maximum amount the borrower can request for        |
 | Application_Type      | StringType    | Type of application (Individual or Joint)          |
 | Annual_Income_Joint  | FloatType    | Combined annual income for joint applicants        |
-| Verification_Status_Joint | StringTypeType | Verification status for joint applicants           |
+| Verification_Status_Joint | StringType | Verification status for joint applicants           |
 
 ### Investor Table (investor):
   * Contains details of investors, such as Investor_Loan_Id, Loan_Id, Investor_Id, Funded_Amount_Inv, and more.
