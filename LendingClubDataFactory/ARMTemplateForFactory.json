@@ -228,7 +228,7 @@
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"annotations": [],
-				"runtimeState": "Started",
+				"runtimeState": "Stopped",
 				"pipelines": [
 					{
 						"pipelineReference": {
@@ -240,7 +240,7 @@
 				],
 				"type": "BlobEventsTrigger",
 				"typeProperties": {
-					"blobPathBeginsWith": "/lendingclub/blobs/work",
+					"blobPathBeginsWith": "/lendingclub/blobs/work/sample",
 					"blobPathEndsWith": ".txt",
 					"ignoreEmptyBlobs": true,
 					"scope": "[parameters('ProcessedEventTrigger_properties_typeProperties_scope')]",
