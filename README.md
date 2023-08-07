@@ -221,6 +221,14 @@ Step | Description
 ## **Hive Tables and Views:**
 * Hive Metastore will be used to store metadata information about Hive tables and partitions.
 * Different types of views, such as Temp Views, Global Temp Views, and Permanent Views, will be created on top of tables for data analysis.
+
+## Tech Stack:
+ * Languages: Scala,SQL.
+ * Services: Azure Data Factory, Azure Databricks, Azure Key Vault, Azure SQL Database, ADLS.
+   
+## Project Architecture:
+![Final_Architecture_Diagram_Lending_Club](https://github.com/Madhusudhan985/LendingClub-Big-Data-Analytics/assets/62938921/68ee2a3e-518e-4a9e-8673-305cb0c5d641)
+
   
  The project involves several steps, including data ingestion, data cleaning, data transformation, and the creation of Hive tables and views for analysis. By implementing this project, the client, Lending Club, will gain valuable insights into customer data, improve loan assessment processes, and make more informed business decisions.
 
