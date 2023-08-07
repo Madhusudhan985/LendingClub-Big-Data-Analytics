@@ -118,5 +118,110 @@ Problem Statement:
 | Pymnt_Plan        | STRING    | Payment plan (Standard or Hardship)                                           |
 | Last_pymnt_amnt   | FLOAT     | Amount of the last payment received                                           |
 
+## **Data Cleaning and Data Transformation**
+* Data cleaning will be performed to handle missing values, duplicates, outliers, and standardize data.
+* Data transformations will be carried out to calculate loan scores and perform other relevant transformations.
+
+#### Data Transformation Specification 01 - LendingClub Customer Analytics
+---
+#### Scenario 1: Count of Total Customers, Grouped by State and Country
+
+Step | Data Source             | Data Destination
+---- | ----------------------- | ----------------------
+1    | work.customer_details   | cooked.customers_total_count
+
+#### Scenario 2: Count of Premium Customers, Grouped by State and Country
+
+Step | Data Source             | Data Destination
+---- | ----------------------- | ----------------------
+1    | work.customer_details   | cooked.customers_premium_count
+
+#### Scenario 3: Percentage of Premium Customers within Each State, Grouped by Country
+
+Step | Data Source             | Data Destination
+---- | ----------------------- | ------------------------------
+1    | work.customer_details   | cooked.customers_premium_percentage
+
+#### Scenario 4: Average Age of Customers, Grouped by State and Country
+
+Step | Data Source             | Data Destination
+---- | ----------------------- | ---------------------
+1    | work.customer_details   | cooked.customers_avg_age
+
+#### Additional Steps:
+
+Step | Description
+---- | ----------------------
+1    | Create 'cooked' database if it doesn't exist.
+2    | Execute Scala dataframe operations to create 'customersAvgAge' dataframe and save the results in 'cooked.customers_avg_age'.
+3    | Execute the Spark SQL code to create temporary tables and perform transformations.
+
+#### Data Transformation Specification 02 - LendingClub Loan Scoring
+  --- 
+#### Step 1: Set Spark Configuration Parameters
+
+Setting Name | Value
+------------ | -----
+spark.sql.unacceptable_rated_pts | 0
+spark.sql.very_bad_rated_pts | 100
+spark.sql.bad_rated_pts | 250
+spark.sql.good_rated_pts | 500
+spark.sql.very_good_rated_pts | 650
+spark.sql.excellent_rated_pts | 800
+spark.sql.unacceptable_grade_pts | 750
+spark.sql.very_bad_grade_pts | 1000
+spark.sql.bad_grade_pts | 1500
+spark.sql.good_grade_pts | 2000
+spark.sql.very_good_grade_pts | 2500
+
+#### Step 2: Load Data and Create Temporary Views
+
+DataFrame          | Source Table
+------------------ | ------------------
+accountDf          | work.account_details
+customerDf         | work.customer_details
+loanDefaultersDf   | work.defaulter_details
+loanDf             | work.loan_details
+paymentDf          | work.payment_details
+paymentLastDf      | paymentPointsDf
+loanDefaulterPts   | loanDefaultPointsDf
+financialDf        | loan_score_details
+loanScore          | loan_score_pts
+loanScoreFinal     | loan_score_eval
+loan_score_final_grade | loan_final_table
+
+#### Step 3: Execute Spark SQL Queries and Data Transformations
+
+Step | Description
+---- | -----------
+1    | Calculate points for last payment and total payment of customers based on certain conditions.
+2    | Calculate points for loan delinquency, public records, public bankruptcies, inquiries, and hardship status for defaulters.
+3    | Calculate points for loan status, home ownership, credit limit, and grade for each customer.
+4    | Calculate the final loan score based on payment history, defaulters history, and financial health points.
+5    | Assign loan grades (A to F/G) based on the final loan score.
+
+#### Step 4: Save Results
+
+DataFrame             | Destination Table
+--------------------- | ------------------
+loan_score_final_grade | loan_final_table
+
+#### Additional Steps:
+
+Step | Description
+---- | -----------
+1    | Create an external table, cooked.customers_loan_score, using the Parquet format to store the final results.
+2    | Display the records where loan_final_grade is NULL or 'A'.
+3    | Exit the notebook with a success message.
+
+
+## **Data Pipelines:**
+* Data cleaning and transformation pipelines will be scheduled to run on specific intervals.
+* Azure Key Vault will be integrated to securely store and access secrets required during the execution of pipelines.
+## **Hive Tables and Views:**
+* Hive Metastore will be used to store metadata information about Hive tables and partitions.
+* Different types of views, such as Temp Views, Global Temp Views, and Permanent Views, will be created on top of tables for data analysis.
+  
+ The project involves several steps, including data ingestion, data cleaning, data transformation, and the creation of Hive tables and views for analysis. By implementing this project, the client, Lending Club, will gain valuable insights into customer data, improve loan assessment processes, and make more informed business decisions.
 
 
