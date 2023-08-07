@@ -17,7 +17,7 @@ Problem Statement:
 ## Project Infrastructure Setup
 *	Azure Databricks will be used to implement the project. Databricks clusters such as All-Purpose Clusters, Job Clusters, and Cluster Pools will be created.
 *	Data will be stored in Azure Blob Storage and Azure Data Lake Storage (ADLS Gen2).
-*	Data Ingestion will be performed using Azure Data Lake Storage.
+*	Data Ingestion will be performed using Azure Data Lake Storage and Azure Data Factory.
 *	Azure Key Vault will be used to securely store credentials.
 
 ## Data Sources
